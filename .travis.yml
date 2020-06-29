@@ -23,6 +23,11 @@ matrix:
     - os: linux
       dist: xenial
       language: python
+      python: "3.9-dev"
+      env: CFLAGS="-Werror -coverage"
+    - os: linux
+      dist: xenial
+      language: python
       python: "pypy3"
       env: CFLAGS="-Werror -coverage"
     - os: osx
@@ -46,7 +51,7 @@ install:
   - python -m pip install --upgrade setuptools
   - python -m pip install --upgrade pytest flake8 "sphinx<3" sphinx_rtd_theme coverage codecov hypothesis attrs
   - python -m pip install --upgrade mypy || true
-  - if [[ "$TRAVIS_OS_NAME" != "osx" ]] && [[ "$TRAVIS_PYTHON_VERSION" != "3.8" ]] && [[ "${TRAVIS_PYTHON_VERSION:0:4}" != "pypy" ]]; then python -m pip install --upgrade pygame; fi
+  - if [[ "$TRAVIS_OS_NAME" != "osx" ]] && [[ "$TRAVIS_PYTHON_VERSION" != "3.9-dev" ]] && [[ "${TRAVIS_PYTHON_VERSION:0:4}" != "pypy" ]]; then python -m pip install --upgrade pygame; fi
 
 script:
   - python -m coverage run --branch setup.py test
