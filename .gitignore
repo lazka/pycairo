@@ -66,3 +66,7 @@ stamp-h.in
 poetry.lock
 
 .vscode
+build-*
+.venv
+cairo-prebuild/
+

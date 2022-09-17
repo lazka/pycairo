@@ -143,11 +143,7 @@ jobs:
 
       - name: Download and extract Cairo Binary
         run: |
-          #TODO: Change below URL on new cairo release
-          curl -L https://github.com/preshing/cairo-windows/releases/download/with-tee/cairo-windows-1.17.2.zip -o cairocomplied.zip
-          7z x cairocomplied.zip
-          Move-Item 'cairo-windows-*' "cairocomplied"
-          tree
+          python download-cairo-win32.py
 
       - name: Set up Python ${{ matrix.python-version }} for x64
         uses: actions/setup-python@v4
@@ -156,12 +152,13 @@ jobs:
           architecture: 'x64'
 
       - name: Build x64 Build
+        shell: cmd
+        env:
+          PKG_CONFIG: ${{ github.workspace }}/cairo-prebuild/bin/pkgconf.exe
+          PKG_CONFIG_PATH: ${{ github.workspace }}/cairo-prebuild/lib/pkgconfig
         run: |
-          $env:INCLUDE="$PWD\cairocomplied\include\"
-          $env:LIB="$PWD\cairocomplied\lib\x64\"
-          Copy-Item "$PWD\cairocomplied\lib\x64\cairo.dll" "cairo\cairo.dll"
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade wheel
+          python download-cairo-win32.py
+          python -m pip install --upgrade pip wheel
           python -m pip install --upgrade setuptools
           python -m pip install --upgrade pytest flake8 coverage hypothesis
           python -m pip install --upgrade pygame
@@ -171,7 +168,6 @@ jobs:
           python setup.py sdist
           python setup.py bdist
           python setup.py install --root=_root
-          python setup.py install --root="$(pwd)"/_root_abs
           python setup.py bdist_wheel
           python setup.py install --root=_root_setup
           python -m pip install .
@@ -186,10 +182,12 @@ jobs:
           architecture: 'x86'
 
       - name: Build x86 Build
+        shell: cmd
+        env:
+          PKG_CONFIG: ${{ github.workspace }}/cairo-prebuild/bin/pkgconf.exe
+          PKG_CONFIG_PATH: ${{ github.workspace }}/cairo-prebuild/lib/pkgconfig
         run: |
-          $env:INCLUDE="$PWD\cairocomplied\include\"
-          $env:LIB="$PWD\cairocomplied\lib\x86\"
-          Copy-Item "cairocomplied\lib\x86\cairo.dll" "cairo\cairo.dll"
+          python download-cairo-win32.py
           python -m pip install --upgrade pip
           python -m pip install --upgrade wheel
           python -m pip install --upgrade setuptools
@@ -201,7 +199,6 @@ jobs:
           python setup.py sdist
           python setup.py bdist
           python setup.py install --root=_root
-          python setup.py install --root="$(pwd)"/_root_abs
           python setup.py bdist_wheel
           python setup.py install --root=_root_setup
           python -m pip install .

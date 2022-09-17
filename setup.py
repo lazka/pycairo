@@ -169,12 +169,14 @@ class build_tests(Command):
     def initialize_options(self):
         self.force = False
         self.build_base = None
+        self.compiler_type = None
 
     def finalize_options(self):
         self.set_undefined_options(
             'build',
             ('build_base', 'build_base'))
         self.force = bool(self.force)
+        self.compiler_type = new_compiler().compiler_type
 
     def run(self):
         cmd = self.reinitialize_command("build_ext")
@@ -207,13 +209,13 @@ class build_tests(Command):
 
         add_ext_cflags(ext, compiler)
 
-        if compiler.compiler_type == "msvc":
-            ext.libraries += ['cairo']
-        else:
-            pkg_config_version_check('cairo', CAIRO_VERSION_REQUIRED)
-            ext.include_dirs += pkg_config_parse('--cflags-only-I', 'cairo')
-            ext.library_dirs += pkg_config_parse('--libs-only-L', 'cairo')
-            ext.libraries += pkg_config_parse('--libs-only-l', 'cairo')
+        pkg_config_version_check('cairo', CAIRO_VERSION_REQUIRED)
+        ext.include_dirs += pkg_config_parse('--cflags-only-I', 'cairo')
+        ext.library_dirs += pkg_config_parse('--libs-only-L', 'cairo')
+        ext.libraries += pkg_config_parse('--libs-only-l', 'cairo')
+        if self.compiler_type == "msvc":
+            ext.libraries += ['user32', 'advapi32', 'ole32']
+            ext.define_macros += [('CAIRO_WIN32_STATIC_BUILD', 1)]
 
         dist = Distribution({"ext_modules": [ext]})
 
@@ -459,21 +461,19 @@ class build_ext(du_build_ext):
     def run(self):
         ext = self.extensions[0]
 
-        # If we are using MSVC, don't use pkg-config,
-        # just assume that INCLUDE and LIB contain
-        # the paths to the Cairo headers and libraries,
-        # respectively.
-        if self.compiler_type == "msvc":
-            ext.libraries += ['cairo']
-        else:
-            pkg_config_version_check('cairo', CAIRO_VERSION_REQUIRED)
-            ext.include_dirs += pkg_config_parse('--cflags-only-I', 'cairo')
-            ext.library_dirs += pkg_config_parse('--libs-only-L', 'cairo')
-            ext.libraries += pkg_config_parse('--libs-only-l', 'cairo')
-
+        pkg_config_version_check('cairo', CAIRO_VERSION_REQUIRED)
+        ext.include_dirs += pkg_config_parse('--cflags-only-I', 'cairo')
+        ext.library_dirs += pkg_config_parse('--libs-only-L', 'cairo')
+        ext.libraries += pkg_config_parse('--libs-only-l', 'cairo')
+        if not self.compiler_type == "msvc":
             compiler = new_compiler(compiler=self.compiler)
             customize_compiler(compiler)
             add_ext_cflags(ext, compiler)
+        else:
+            # let's assume these are static libs
+            # these extra libs are needed since we are linking statically
+            ext.libraries += ['user32', 'advapi32', 'ole32']
+            ext.define_macros += [('CAIRO_WIN32_STATIC_BUILD', 1)]
 
         du_build_ext.run(self)
 
