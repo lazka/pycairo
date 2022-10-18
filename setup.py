@@ -18,6 +18,8 @@ from distutils import sysconfig
 PYCAIRO_VERSION = '1.22.1'
 CAIRO_VERSION_REQUIRED = '1.15.10'
 
+PYCAIRO_BUILD_NO_PKGCONFIG = os.environ.get("PYCAIRO_BUILD_NO_PKGCONFIG", False)
+PYCAIRO_BUILD_MSVC_STATIC = os.environ.get("PYCAIRO_BUILD_MSVC_STATIC", True)
 
 def get_command_class(name):
     # in case pip loads with setuptools this returns the extended commands
@@ -209,11 +211,12 @@ class build_tests(Command):
 
         add_ext_cflags(ext, compiler)
 
-        pkg_config_version_check('cairo', CAIRO_VERSION_REQUIRED)
-        ext.include_dirs += pkg_config_parse('--cflags-only-I', 'cairo')
-        ext.library_dirs += pkg_config_parse('--libs-only-L', 'cairo')
-        ext.libraries += pkg_config_parse('--libs-only-l', 'cairo')
-        if self.compiler_type == "msvc":
+        if not PYCAIRO_BUILD_NO_PKGCONFIG:
+            pkg_config_version_check('cairo', CAIRO_VERSION_REQUIRED)
+            ext.include_dirs += pkg_config_parse('--cflags-only-I', 'cairo')
+            ext.library_dirs += pkg_config_parse('--libs-only-L', 'cairo')
+            ext.libraries += pkg_config_parse('--libs-only-l', 'cairo')
+        if self.compiler_type == "msvc" and PYCAIRO_BUILD_MSVC_STATIC:
             ext.libraries += ['user32', 'advapi32', 'ole32']
             ext.define_macros += [('CAIRO_WIN32_STATIC_BUILD', 1)]
 
@@ -461,16 +464,16 @@ class build_ext(du_build_ext):
     def run(self):
         ext = self.extensions[0]
 
-        pkg_config_version_check('cairo', CAIRO_VERSION_REQUIRED)
-        ext.include_dirs += pkg_config_parse('--cflags-only-I', 'cairo')
-        ext.library_dirs += pkg_config_parse('--libs-only-L', 'cairo')
-        ext.libraries += pkg_config_parse('--libs-only-l', 'cairo')
+        if not PYCAIRO_BUILD_NO_PKGCONFIG:
+            pkg_config_version_check('cairo', CAIRO_VERSION_REQUIRED)
+            ext.include_dirs += pkg_config_parse('--cflags-only-I', 'cairo')
+            ext.library_dirs += pkg_config_parse('--libs-only-L', 'cairo')
+            ext.libraries += pkg_config_parse('--libs-only-l', 'cairo')
         if not self.compiler_type == "msvc":
             compiler = new_compiler(compiler=self.compiler)
             customize_compiler(compiler)
             add_ext_cflags(ext, compiler)
-        else:
-            # let's assume these are static libs
+        elif self.compiler_type == "msvc" and PYCAIRO_BUILD_MSVC_STATIC:
             # these extra libs are needed since we are linking statically
             ext.libraries += ['user32', 'advapi32', 'ole32']
             ext.define_macros += [('CAIRO_WIN32_STATIC_BUILD', 1)]
