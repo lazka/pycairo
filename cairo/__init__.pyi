@@ -2466,11 +2466,22 @@ class ImageSurface(Surface):
 
     def get_data(self) -> memoryview:
         """
-        :returns: a Python buffer object for the data of the *ImageSurface*, for
-            direct inspection or modification. On Python 3 a memoryview object is
-            returned.
+        :returns: a Python memoryview object for the data of the *ImageSurface*,
+            for direct inspection or modification.
+        :raises cairo.Error: In case the surface is finished.
+
+        Get a :class:`memoryview` object for the data of the *ImageSurface*, for
+        direct inspection or modification.
+
+        A call to :meth:`Surface.flush` is required before accessing the pixel
+        data to ensure that all pending drawing operations are finished. A call
+        to :meth:`Surface.mark_dirty` is required after the data is modified.
 
         .. versionadded:: 1.2
+
+        .. versionchanged:: 1.28.0
+            Will raise in case the surface is finished to avoid returning
+            undefined data.
         """
 
     def get_format(self) -> Format:

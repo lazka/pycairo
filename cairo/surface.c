@@ -999,6 +999,18 @@ image_surface_get_data (PycairoImageSurface *o, PyObject *ignored) {
   unsigned char * buffer;
 
   surface = o->surface;
+
+  // We need to figure out if the surface is finished or not to see
+  // if the buffer is still valid.
+  // https://gitlab.freedesktop.org/cairo/cairo/-/issues/406
+  // https://github.com/gtk-rs/cairo/issues/323
+  cairo_t *ctx = cairo_create (surface);
+  cairo_status_t status = cairo_status (ctx);
+  cairo_destroy (ctx);
+  if (Pycairo_Check_Status (status)) {
+    return NULL;
+  }
+
   buffer = cairo_image_surface_get_data (surface);
   if (buffer == NULL) {
     Py_RETURN_NONE;

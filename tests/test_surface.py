@@ -744,6 +744,26 @@ def test_image_surface_create_for_data():
         cairo.ImageSurface.create_for_data(buf, format_, 3, object())
 
 
+def test_image_surface_owned_get_data_finished():
+    surface = cairo.ImageSurface(cairo.Format.ARGB32, 30, 30)
+    surface.finish()
+    with pytest.raises(cairo.Error) as excinfo:
+        surface.get_data()
+    assert excinfo.value.status == cairo.Status.SURFACE_FINISHED
+
+
+def test_image_surface_extern_get_data_finished():
+    width, height = 6, 4
+    buffer = bytearray(width * height * 4)
+    surface = cairo.ImageSurface.create_for_data(
+        buffer, cairo.FORMAT_ARGB32, width, height, width * 4
+    )
+    surface.finish()
+    with pytest.raises(cairo.Error) as excinfo:
+        surface.get_data()
+    assert excinfo.value.status == cairo.Status.SURFACE_FINISHED
+
+
 def test_image_surface_stride_for_width():
     v = cairo.ImageSurface.format_stride_for_width(cairo.Format.ARGB32, 10)
     assert v == 40
