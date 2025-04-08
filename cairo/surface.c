@@ -225,6 +225,12 @@ static PyObject *
 surface_finish (PycairoSurface *o, PyObject *ignored) {
   cairo_surface_finish (o->surface);
   Py_CLEAR(o->base);
+
+  /* After an image surface is finished it won't access the buffer and
+  we can release it */
+  cairo_surface_set_user_data(
+    o->surface, &surface_buffer_view_key, NULL, NULL);
+
   RETURN_NULL_IF_CAIRO_SURFACE_ERROR(o->surface);
   Py_RETURN_NONE;
 }
