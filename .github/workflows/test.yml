@@ -122,18 +122,23 @@ jobs:
         poetry run python -m sphinx -W -a -E -b html -n docs docs/_build
 
   msvc:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14', 'pypy-3.10', 'pypy-3.11']
         architecture: ['x64']
+        os: ['windows-2022']
         include:
           - python-version: '3.9'
             architecture: 'x86'
+            os: 'windows-2022'
           - python-version: '3.13'
             architecture: 'x86'
-
+            os: 'windows-2022'
+          - python-version: '3.13'
+            architecture: 'arm64'
+            os: 'windows-11-arm'
     steps:
       - uses: actions/checkout@v4
 
@@ -152,7 +157,7 @@ jobs:
 
       - name: Download and extract Cairo Binary
         run: |
-          python .ci/download-cairo-win32.py
+          python .ci/download-cairo-win32.py "${{ matrix.architecture }}"
 
       - name: Install dependencies
         run: |

@@ -38,12 +38,13 @@ jobs:
         include:
           - os: windows-2022
             platform_id: win_amd64
-            cairo_plat: x64
-            msvc_arch: x64
+            arch: x64
           - os: windows-2022
             platform_id: win32
-            cairo_plat: x86
-            msvc_arch: x86
+            arch: x86
+          - os: windows-11-arm
+            platform_id: win_arm64
+            arch: arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -51,20 +52,19 @@ jobs:
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1.13.0
         with:
-          arch : ${{ matrix.msvc_arch }}
+          arch : ${{ matrix.arch }}
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.23.2
         env:
           CFLAGS: "-DCAIRO_WIN32_STATIC_BUILD=1"
-          CIBW_BEFORE_BUILD: "python {package}/.ci/download-cairo-win32.py ${{ matrix.cairo_plat }}"
+          CIBW_BEFORE_BUILD: "python {package}/.ci/download-cairo-win32.py ${{ matrix.arch }}"
           CIBW_BUILD: cp39-${{ matrix.platform_id }} cp310-${{ matrix.platform_id }} cp311-${{ matrix.platform_id }} cp312-${{ matrix.platform_id }} cp313-${{ matrix.platform_id }}
           CIBW_TEST_REQUIRES: pytest==8.3.5
           CIBW_TEST_COMMAND: bash {package}/.ci/test-wheels.sh {package}
-          CIBW_TEST_SKIP: "*-win_arm64"
           CIBW_ENVIRONMENT_WINDOWS: PKG_CONFIG_PATH='${{ github.workspace }}/cairo-prebuild/lib/pkgconfig' PKG_CONFIG='${{ github.workspace }}/cairo-prebuild/bin/pkgconf.exe'
 
       - uses: actions/upload-artifact@v4
         with:
-          name: "wheel-${{ matrix.cairo_plat }}"
+          name: "wheel-${{ matrix.arch }}"
           path: ./wheelhouse/*.whl
