@@ -139,9 +139,18 @@ static PyMethodDef cairo_functions[] = {
   {NULL, NULL, 0, NULL},
 };
 
+static int loaded = 0;
+
 static int exec_cairo(PyObject *m)
 {
   PyObject *capi;
+
+  if (loaded) {
+    PyErr_SetString(PyExc_ImportError,
+                    "cannot load module more than once per process");
+    return -1;
+  }
+  loaded = 1;
 
   if (PyType_Ready(&PycairoContext_Type) < 0)
     return -1;
@@ -548,6 +557,9 @@ static int exec_cairo(PyObject *m)
 
 static PyModuleDef_Slot cairo_slots[] = {
   {Py_mod_exec, (void*)exec_cairo},
+#ifdef Py_MOD_MULTIPLE_INTERPRETERS_NOT_SUPPORTED
+  {Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_NOT_SUPPORTED},
+#endif
   {0, NULL},
 };
 
