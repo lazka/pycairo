@@ -75,7 +75,6 @@ else
     '-Wformat-security',
     '-Wimplicit-function-declaration',
     '-Winit-self',
-    '-Winline',
     '-Wmissing-format-attribute',
     '-Wmissing-noreturn',
     '-Wnested-externs',
