@@ -4,6 +4,9 @@
 
 static PyMethodDef CModMethods[] = {
     {"create_image_surface", create_image_surface, METH_NOARGS, NULL},
+    {"create_context", create_context, METH_NOARGS, NULL},
+    {"check_status", check_status, METH_VARARGS, NULL},
+    {"test_capi", test_capi, METH_NOARGS, NULL},
     {NULL, NULL, 0, NULL}
 };
 

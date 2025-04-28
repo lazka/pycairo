@@ -38,89 +38,125 @@
 #include <cairo-pdf.h>
 #endif
 
+static void capi_destructor (PyObject *capsule) {
+  Pycairo_CAPI_t *capi = (Pycairo_CAPI_t*)PyCapsule_GetPointer (capsule, "cairo.CAPI");
+  if (capi != NULL) {
+    PyMem_Free (capi);
+  }
+}
+
 /* C API.  Clients get at this via Pycairo_IMPORT or import_cairo(), defined in py3cairo.h.
  */
-static Pycairo_CAPI_t CAPI = {
-  &PycairoContext_Type,
-  PycairoContext_FromContext,
+int
+init_capi (PyObject *module) {
+  PyObject *capi_capsule;
+  Pycairo_CAPI_t *capi;
 
-  &PycairoFontFace_Type,
-  &PycairoToyFontFace_Type,
-  PycairoFontFace_FromFontFace,
+  capi = (Pycairo_CAPI_t *)PyMem_Malloc(sizeof(Pycairo_CAPI_t));
+  if (capi == NULL) {
+      PyErr_NoMemory();
+      return -1;
+  }
 
-  &PycairoFontOptions_Type,
-  PycairoFontOptions_FromFontOptions,
+  capi->Context_Type = &PycairoContext_Type;
+  capi->Context_FromContext = PycairoContext_FromContext;
 
-  &PycairoMatrix_Type,
-  PycairoMatrix_FromMatrix,
+  capi->FontFace_Type = &PycairoFontFace_Type;
+  capi->ToyFontFace_Type = &PycairoToyFontFace_Type;
+  capi->FontFace_FromFontFace = PycairoFontFace_FromFontFace;
 
-  &PycairoPath_Type,
-  PycairoPath_FromPath,
+  capi->FontOptions_Type = &PycairoFontOptions_Type;
+  capi->FontOptions_FromFontOptions = PycairoFontOptions_FromFontOptions;
 
-  &PycairoPattern_Type,
-  &PycairoSolidPattern_Type,
-  &PycairoSurfacePattern_Type,
-  &PycairoGradient_Type,
-  &PycairoLinearGradient_Type,
-  &PycairoRadialGradient_Type,
-  PycairoPattern_FromPattern,
+  capi->Matrix_Type = &PycairoMatrix_Type;
+  capi->Matrix_FromMatrix = PycairoMatrix_FromMatrix;
 
-  &PycairoScaledFont_Type,
-  PycairoScaledFont_FromScaledFont,
+  capi->Path_Type = &PycairoPath_Type;
+  capi->Path_FromPath = PycairoPath_FromPath;
 
-  &PycairoSurface_Type,
-#ifdef CAIRO_HAS_IMAGE_SURFACE
-  &PycairoImageSurface_Type,
-#else
-  0,
-#endif
-#ifdef CAIRO_HAS_PDF_SURFACE
-  &PycairoPDFSurface_Type,
-#else
-  0,
-#endif
-#ifdef CAIRO_HAS_PS_SURFACE
-  &PycairoPSSurface_Type,
-#else
-  0,
-#endif
-#ifdef CAIRO_HAS_SVG_SURFACE
-  &PycairoSVGSurface_Type,
-#else
-  0,
-#endif
-#ifdef CAIRO_HAS_WIN32_SURFACE
-  &PycairoWin32Surface_Type,
-  &PycairoWin32PrintingSurface_Type,
-#else
-  0,
-  0,
-#endif
-#ifdef CAIRO_HAS_XCB_SURFACE
-  &PycairoXCBSurface_Type,
-#else
-  0,
-#endif
-#ifdef CAIRO_HAS_XLIB_SURFACE
-  &PycairoXlibSurface_Type,
-#else
-  0,
-#endif
-  PycairoSurface_FromSurface,
+  capi->Pattern_Type = &PycairoPattern_Type;
+  capi->SolidPattern_Type = &PycairoSolidPattern_Type;
+  capi->SurfacePattern_Type = &PycairoSurfacePattern_Type;
+  capi->Gradient_Type = &PycairoGradient_Type;
+  capi->LinearGradient_Type = &PycairoLinearGradient_Type;
+  capi->RadialGradient_Type = &PycairoRadialGradient_Type;
+  capi->Pattern_FromPattern = PycairoPattern_FromPattern;
 
-  Pycairo_Check_Status,
+  capi->ScaledFont_Type = &PycairoScaledFont_Type;
+  capi->ScaledFont_FromScaledFont = PycairoScaledFont_FromScaledFont;
 
-  &PycairoRectangleInt_Type,
-  PycairoRectangleInt_FromRectangleInt,
+  capi->Surface_Type = &PycairoSurface_Type;
 
-  &PycairoRegion_Type,
-  PycairoRegion_FromRegion,
-#ifdef CAIRO_HAS_RECORDING_SURFACE
-  &PycairoRecordingSurface_Type,
-#else
-  0,
-#endif
-};
+  #ifdef CAIRO_HAS_IMAGE_SURFACE
+  capi->ImageSurface_Type = &PycairoImageSurface_Type;
+  #else
+  capi->ImageSurface_Type = 0;
+  #endif
+
+  #ifdef CAIRO_HAS_PDF_SURFACE
+  capi->PDFSurface_Type = &PycairoPDFSurface_Type;
+  #else
+  capi->PDFSurface_Type = 0;
+  #endif
+
+  #ifdef CAIRO_HAS_PS_SURFACE
+  capi->PSSurface_Type = &PycairoPSSurface_Type;
+  #else
+  capi->PSSurface_Type = 0;
+  #endif
+
+  #ifdef CAIRO_HAS_SVG_SURFACE
+  capi->SVGSurface_Type = &PycairoSVGSurface_Type;
+  #else
+  capi->SVGSurface_Type = 0;
+  #endif
+
+  #ifdef CAIRO_HAS_WIN32_SURFACE
+  capi->Win32Surface_Type = &PycairoWin32Surface_Type;
+  capi->Win32PrintingSurface_Type = &PycairoWin32PrintingSurface_Type;
+  #else
+  capi->Win32Surface_Type = 0;
+  capi->Win32PrintingSurface_Type = 0;
+  #endif
+
+  #ifdef CAIRO_HAS_XCB_SURFACE
+  capi->XCBSurface_Type = &PycairoXCBSurface_Type;
+  #else
+  capi->XCBSurface_Type = 0;
+  #endif
+
+  #ifdef CAIRO_HAS_XLIB_SURFACE
+  capi->XlibSurface_Type = &PycairoXlibSurface_Type;
+  #else
+  capi->XlibSurface_Type = 0;
+  #endif
+
+  capi->Surface_FromSurface = PycairoSurface_FromSurface;
+  capi->Check_Status = Pycairo_Check_Status;
+
+  capi->RectangleInt_Type = &PycairoRectangleInt_Type;
+  capi->RectangleInt_FromRectangleInt = PycairoRectangleInt_FromRectangleInt;
+
+  capi->Region_Type = &PycairoRegion_Type;
+  capi->Region_FromRegion = PycairoRegion_FromRegion;
+
+  #ifdef CAIRO_HAS_RECORDING_SURFACE
+  capi->RecordingSurface_Type = &PycairoRecordingSurface_Type;
+  #else
+  capi->RecordingSurface_Type = 0;
+  #endif
+
+  /* Create a Capsule containing the CAPI pointer */
+  capi_capsule = PyCapsule_New((void *)capi, "cairo.CAPI", capi_destructor);
+
+  if (capi_capsule != NULL) {
+    PyModule_AddObject(module, "CAPI", capi_capsule);
+  } else {
+    return -1;
+  }
+
+  return 0;
+}
 
 static PyObject *
 pycairo_cairo_version (PyObject *self, PyObject *ignored) {
@@ -143,8 +179,6 @@ static int loaded = 0;
 
 static int exec_cairo(PyObject *m)
 {
-  PyObject *capi;
-
   if (loaded) {
     PyErr_SetString(PyExc_ImportError,
                     "cannot load module more than once per process");
@@ -543,14 +577,8 @@ static int exec_cairo(PyObject *m)
 
 #undef STRCONSTANT
 
-  /* Create a Capsule containing the CAPI pointer */
-  capi = PyCapsule_New((void *)(&CAPI), "cairo.CAPI", 0);
-
-  if (capi != NULL) {
-    PyModule_AddObject(m, "CAPI", capi);
-  } else {
+  if(init_capi(m) < 0)
     return -1;
-  }
 
   return 0;
 }
