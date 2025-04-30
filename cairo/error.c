@@ -71,7 +71,7 @@ set_error (PyObject *error_type, cairo_status_t status)
 
 int
 Pycairo_Check_Status (cairo_status_t status) {
-    PyObject *module, *error, *suberror;
+    PyObject *module, *suberror;
 
     if (PyErr_Occurred() != NULL)
         return 1;
@@ -79,33 +79,23 @@ Pycairo_Check_Status (cairo_status_t status) {
     if (status == CAIRO_STATUS_SUCCESS)
         return 0;
 
-    module = PyImport_ImportModule ("cairo");
-    if (module == NULL)
-        return 1;
-    error = PyObject_GetAttrString (module, "Error");
-    Py_DECREF (module);
-    if (error == NULL)
-        return 1;
-
     switch (status) {
         case CAIRO_STATUS_NO_MEMORY:
             suberror = error_get_type_combined (
-                error, PyExc_MemoryError, "cairo.MemoryError");
+                (PyObject *)&PycairoError_Type, PyExc_MemoryError, "cairo.MemoryError");
             set_error (suberror, status);
             Py_DECREF (suberror);
             break;
         case CAIRO_STATUS_READ_ERROR:
         case CAIRO_STATUS_WRITE_ERROR:
             suberror = error_get_type_combined (
-                error, PyExc_IOError, "cairo.IOError");
+                (PyObject *)&PycairoError_Type, PyExc_IOError, "cairo.IOError");
             set_error (suberror, status);
             Py_DECREF (suberror);
             break;
         default:
-            set_error (error, status);
+            set_error ((PyObject *)&PycairoError_Type, status);
     }
-
-    Py_DECREF (error);
 
     return 1;
 }
