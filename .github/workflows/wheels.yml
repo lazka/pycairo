@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: '3.11'
 
@@ -24,7 +24,7 @@ jobs:
       - name: Build sdist
         run: python -m build --sdist
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: sdist
           path: ./dist/*.tar.gz
@@ -47,15 +47,15 @@ jobs:
             arch: arm64
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup MSVC
-        uses: ilammy/msvc-dev-cmd@v1.13.0
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
         with:
           arch : ${{ matrix.arch }}
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.2.1
+        uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
         env:
           CFLAGS: "-DCAIRO_WIN32_STATIC_BUILD=1"
           CIBW_BEFORE_BUILD: "python {package}/.ci/download-cairo-win32.py ${{ matrix.arch }}"
@@ -65,7 +65,7 @@ jobs:
           CIBW_TEST_COMMAND: bash {package}/.ci/test-wheels.sh {package}
           CIBW_ENVIRONMENT_WINDOWS: PKG_CONFIG_PATH='${{ github.workspace }}/cairo-prebuild/lib/pkgconfig' PKG_CONFIG='${{ github.workspace }}/cairo-prebuild/bin/pkgconf.exe'
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "wheel-${{ matrix.arch }}"
           path: ./wheelhouse/*.whl
