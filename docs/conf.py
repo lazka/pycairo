@@ -1,17 +1,17 @@
+import importlib.machinery
+import importlib.util
 import os
 import sys
 
 
 dir_ = os.path.dirname(os.path.realpath(__file__))
-
-
-def exec_module(path):
-    import importlib.machinery
-    loader = importlib.machinery.SourceFileLoader("cairo", path)
-    return loader.load_module()
-
-
-sys.modules["cairo"] = exec_module(os.path.join(dir_, "..", "cairo", "__init__.pyi"))
+loader = importlib.machinery.SourceFileLoader(
+    "cairo", os.path.join(dir_, "..", "cairo", "__init__.pyi")
+)
+spec = importlib.util.spec_from_loader("cairo", loader)
+module = importlib.util.module_from_spec(spec)
+sys.modules["cairo"] = module
+loader.exec_module(module)
 
 extensions = [
     'sphinx.ext.intersphinx',
