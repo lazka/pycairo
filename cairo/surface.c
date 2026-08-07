@@ -558,6 +558,7 @@ surface_get_mime_data (PycairoSurface *o, PyObject *args) {
   mime_intern = PyUnicode_InternFromString (mime_type);
   user_data = cairo_surface_get_user_data(
     o->surface, (cairo_user_data_key_t *)mime_intern);
+  Py_DECREF(mime_intern);
 
   if (user_data == NULL) {
     /* In case the mime data wasn't set through the Python API just copy it */
