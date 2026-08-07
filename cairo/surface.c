@@ -503,7 +503,7 @@ surface_set_mime_data (PycairoSurface *o, PyObject *args) {
   mime_intern = PyUnicode_InternFromString (mime_type);
   surface_capsule = PyCapsule_New(o->surface, NULL, NULL);
   view_capsule = PyCapsule_New(view, NULL, NULL);
-  user_data = Py_BuildValue("(NNOO)", surface_capsule, view_capsule, obj, mime_intern);
+  user_data = Py_BuildValue("(NNON)", surface_capsule, view_capsule, obj, mime_intern);
   if (user_data == NULL) {
     PyBuffer_Release (view);
     PyMem_Free (view);
