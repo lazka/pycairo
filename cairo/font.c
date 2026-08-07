@@ -429,10 +429,9 @@ scaled_font_text_to_glyphs (PycairoScaledFont *o, PyObject *args) {
       goto error;
     pyglyph = PyObject_Call(
       (PyObject *)&PycairoGlyph_Type, glyph_args, NULL);
-    if (pyglyph == NULL) {
-      Py_DECREF (glyph_args);
+    Py_DECREF (glyph_args);
+    if (pyglyph == NULL)
       goto error;
-    }
     PyList_SET_ITEM (glyph_list, i, pyglyph);
   }
   cairo_glyph_free (glyphs);
@@ -450,10 +449,9 @@ scaled_font_text_to_glyphs (PycairoScaledFont *o, PyObject *args) {
         goto error;
       pycluster = PyObject_Call(
         (PyObject *)&PycairoTextCluster_Type, cluster_args, NULL);
-      if (pycluster == NULL) {
-        Py_DECREF (cluster_args);
+      Py_DECREF (cluster_args);
+      if (pycluster == NULL)
         goto error;
-      }
       PyList_SET_ITEM (cluster_list, i, pycluster);
     }
     cairo_text_cluster_free (clusters);
