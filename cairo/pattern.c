@@ -1018,6 +1018,7 @@ _raster_source_release_func (cairo_pattern_t *pattern,
     result = NULL;
     goto error;
   }
+  Py_DECREF (result);
 
   Py_DECREF (pysurface);
   PyGILState_Release (gstate);
