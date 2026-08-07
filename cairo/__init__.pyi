@@ -2307,7 +2307,7 @@ class Surface:
         forth. The result can then be used with :class:`ScaledFont`.
         """
 
-    def get_mime_data(self, mime_type: str) -> Optional[bytes]:
+    def get_mime_data(self, mime_type: str) -> Union[bytes, bytearray, memoryview, None]:
         """
         :param mime_type: the MIME type of the image data
             (:ref:`constants_MIME_TYPE`)
@@ -2453,7 +2453,7 @@ class Surface:
         .. versionadded:: 1.2
         """
 
-    def set_mime_data(self, mime_type: str, data: Optional[bytes]) -> None:
+    def set_mime_data(self, mime_type: str, data: Union[bytes, bytearray, memoryview, None]) -> None:
         """
         :param mime_type: the MIME type of the image data
             (:ref:`constants_MIME_TYPE`)

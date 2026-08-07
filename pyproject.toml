@@ -22,7 +22,7 @@ optional = true
 [dependency-groups]
 dev = [
     "pytest>=8.3.0,<10",
-    "mypy==1.18.2 ; platform_python_implementation != 'PyPy'",
+    "mypy==2.3.0 ; platform_python_implementation != 'PyPy'",
     "flake8>=7.0.0,<8",
     "coverage[toml]>=7.2.3,<8",
     "meson-python>= 0.16.0",

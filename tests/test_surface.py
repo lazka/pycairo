@@ -501,6 +501,18 @@ def test_surface_get_set_mime_data() -> None:
     with pytest.raises(TypeError):
         surface.get_mime_data(object())  # type: ignore
 
+    v = memoryview(b"bla")
+    surface.set_mime_data("foo", v)
+    assert surface.get_mime_data("foo") is v
+    surface.set_mime_data("foo", None)
+    assert surface.get_mime_data("foo") is None
+
+    vb = bytearray(b"bla")
+    surface.set_mime_data("foo", vb)
+    assert surface.get_mime_data("foo") is vb
+    surface.set_mime_data("foo", None)
+    assert surface.get_mime_data("foo") is None
+
 
 def test_supports_mime_type() -> None:
     surface = cairo.PDFSurface(None, 3, 3)
